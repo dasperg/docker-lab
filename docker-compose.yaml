@@ -1,0 +1,47 @@
+version: "3.3"
+services:
+    nginx:
+        image: nginx:latest
+        ports:
+            - "80:80"
+        volumes:
+            - ./CakePhp:/usr/share/nginx/html/CakePhp
+            - ./Laravel:/usr/share/nginx/html/Laravel
+            - ./docker/cakephp.xxx.conf:/etc/nginx/conf.d/cakephp.xxx.conf
+            - ./docker/laravel.xxx.conf:/etc/nginx/conf.d/laravel.xxx.conf
+        links:
+            - php7.2
+            - mysql
+#        restart_policy:
+#            condition: on-failure
+
+    php7.2:
+        image: 174256680268.dkr.ecr.eu-central-1.amazonaws.com/php7.2:latest
+        volumes:
+            - ./Laravel:/usr/share/nginx/html/Laravel
+            - ./CakePhp:/usr/share/nginx/html/CakePhp
+#        command: composer install -q
+        links:
+            - mysql
+
+    mysql:
+        image: mysql:5.7
+        ports:
+            - "3306:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: app
+            MYSQL_USER: admin
+            MYSQL_PASSWORD: secret
+        volumes:
+            - ./data/mysql:/var/lib/mysql
+
+    pma:
+        image: phpmyadmin/phpmyadmin
+        restart: always
+        environment:
+            PMA_HOST: mysql
+        ports:
+            - "8080:80"
+        links:
+            - mysql
